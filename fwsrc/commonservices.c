@@ -804,15 +804,12 @@ static void ICACHE_FLASH_ATTR SlowTick( int opm )
 {
 	static int GPIO0Down = 0;
 
-	if( (PIN_IN & _BV(0)) == 0 )
-	{
-		if( GPIO0Down++ > (5000 / SLOWTICK_MS) )
-		{
+	if( (PIN_IN & _BV(0)) == 0 ) {
+		if( GPIO0Down++ > (5000 / SLOWTICK_MS) ) {
 			RestoreAndReboot();
 		}
-	}
-	else
-	{
+	} 
+	else {
 		GPIO0Down = 0;
 	}
 
@@ -845,15 +842,18 @@ static void ICACHE_FLASH_ATTR SlowTick( int opm )
 		if( stat == STATION_WRONG_PASSWORD || stat == STATION_NO_AP_FOUND || stat == STATION_CONNECT_FAIL ) {
 			wifi_station_disconnect();
 			wifi_fail_connects++;
-			printf( "Connection failed with code %d... Retrying, try: ", stat, wifi_fail_connects );
+			printf( "Connection failed with code %d... Fails: %d\n", stat, wifi_fail_connects);
 #ifdef MAX_CONNECT_FAILURES_BEFORE_SOFTAP
-			if( wifi_fail_connects > MAX_CONNECT_FAILURES_BEFORE_SOFTAP )
-			{
-				RestoreAndReboot();
-			}
+			if( wifi_fail_connects >= MAX_CONNECT_FAILURES_BEFORE_SOFTAP ) {
+				printf( "Switch to AP\n");					
+				need_to_switch_opmode = 2;
+			} else 
 #endif
-			wifi_station_connect();
-			printf("\n");
+			{
+				printf( "Retry...");					
+				wifi_station_connect();
+				printf("\n");
+			}
 			printed_ip = 0;
 		} else if( stat == STATION_GOT_IP && !printed_ip ) {
 			wifi_station_get_config( &wcfg );
